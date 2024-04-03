@@ -1,26 +1,20 @@
-const express = require("express");
-const bodyParser = require("body-parser");
-const app = express();
-const db = require("./queries");
 require("dotenv").config();
+const { pool, connectDB } = require("./db/conn.js");
+const app = require("./app.js")
 
-app.use(bodyParser.json());
-app.use(
-    bodyParser.urlencoded({
-        extended: true,
+// NOTE: listening to any errors from app
+app.on("error", (error) => {
+    console.log("ERR: ", error);
+    process.exit(1)
+})
+
+connectDB()
+    .then(() => {
+        app.listen(process.env.PORT, () => {
+            console.log(`App running on port ${process.env.PORT}.`);
+        });
+
     })
-);
-
-app.get("/", (req, res) => {
-    res.json({ info: "Node.js, Express, and Postgres API" });
-});
-
-app.get("/users", db.getUsers);
-app.get("/user", db.getUserById);
-app.post("/create-user", db.createUser);
-app.put("/update-user", db.updateUser);
-app.delete("/delete-user", db.deleteUser);
-
-app.listen(process.env.PORT, () => {
-    console.log(`App running on port ${process.env.PORT}.`);
-});
+    .catch((err) => {
+        console.log("MongoDB failed to connect ...", err);
+    })
