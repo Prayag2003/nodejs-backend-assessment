@@ -44,8 +44,17 @@ const registerUser = async (req, res) => {
         res.cookie('accessToken', accessToken, { httpOnly: true });
         res.cookie('refreshToken', refreshToken, { httpOnly: true });
 
+        const { data, error } = await resend.emails.send({
+            from: "onboarding@resend.dev",
+            to: "anandvishy387@gmail.com",
+            subject: "hello world",
+            html: "<strong>it works!</strong>",
+        });
 
-        res.status(201).json({ user, accessToken });
+        if (error) {
+            return res.status(400).json({ error });
+        }
+        res.status(201).json({ user, accessToken, data });
     } catch (error) {
         console.error('Error registering user:', error);
         res.status(500).json({ error: 'Internal server error' });
