@@ -4,7 +4,6 @@ const getCourses = (req, res) => {
     const { category, level, popularity, page = 1, limit = 10 } = req.query;
     const offset = (page - 1) * limit;
 
-    // Construct SQL query based on provided parameters
     let query = "SELECT * FROM courses WHERE 1=1";
     if (category) {
         query += ` AND category = '${category}'`;
@@ -16,7 +15,6 @@ const getCourses = (req, res) => {
         query += ` AND popularity >= ${popularity}`;
     }
 
-    // Add pagination
     query += ` LIMIT ${limit} OFFSET ${offset}`;
 
     pool.query(query, (error, results) => {
