@@ -1,6 +1,8 @@
 const { pool, connectDB } = require("../db/conn.js");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken")
+const { Resend } = require("resend")
+const resend = new Resend(process.env.RESEND_API_KEY)
 
 const getUsers = (req, res) => {
     pool.query("SELECT * FROM users ORDER BY id ASC", (error, results) => {
@@ -37,14 +39,12 @@ const registerUser = async (req, res) => {
         // Generate refresh token (optional: store refresh token in the database)
         const refreshToken = jwt.sign({ _id: user.id }, process.env.REFRESH_TOKEN_SECRET, { expiresIn: '10d' });
 
-        // Store refresh token in the database
         await pool.query('UPDATE users SET refresh_token = $1 WHERE id = $2', [refreshToken, user.id]);
 
-        // Set cookies (access token and refresh token)
         res.cookie('accessToken', accessToken, { httpOnly: true });
         res.cookie('refreshToken', refreshToken, { httpOnly: true });
 
-        // Return user data and tokens
+
         res.status(201).json({ user, accessToken });
     } catch (error) {
         console.error('Error registering user:', error);

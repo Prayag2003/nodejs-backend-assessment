@@ -6,7 +6,27 @@ const getAllCoursesBySuperadmin = (req, res) => {
         return res.status(403).json({ message: "Only superadmin users have permission to perform this operation" });
     }
 
-    pool.query("SELECT * FROM courses", (error, results) => {
+    const { category, level, page, limit } = req.query;
+    console.log(category + "  " + level + "  " + page + "  " + limit);
+    let query = "SELECT * FROM courses";
+
+    const filterValues = [];
+    if (category) {
+        query += " WHERE category = $1";
+        filterValues.push(category);
+    }
+    if (level) {
+        query += filterValues.length ? " AND" : " WHERE";
+        query += " level = $2";
+        filterValues.push(level);
+    }
+
+    // Adding pagination
+    const offset = (page - 1) * limit;
+    query += " OFFSET $3 LIMIT $4";
+    filterValues.push(offset, limit);
+
+    pool.query(query, filterValues, (error, results) => {
         if (error) {
             console.error("Error fetching all courses by superadmin:", error);
             return res.status(500).json({ message: "Internal server error" });
